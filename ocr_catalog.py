@@ -31,34 +31,53 @@ class PDFToImageRenderer:
             raise RuntimeError("Gagal membaca jumlah halaman PDF")
 
         return int(match.group(1))
+    
+    # def render_pages(self, start_page: int = 1, max_pages: int | None = None):
+    #     if start_page > self.total_pages:
+    #         raise ValueError(
+    #             f"start_page ({start_page}) melebihi total halaman PDF ({self.total_pages})"
+    #         )
+
+    #     first_page = start_page
+
+    #     if max_pages:
+    #         last_page = min(
+    #             start_page + max_pages - 1,
+    #             self.total_pages
+    #         )
+    #     else:
+    #         last_page = self.total_pages
+
+    #     print(
+    #         f"📄 Rendering pages {first_page}–{last_page} "
+    #         f"dari total {self.total_pages} halaman"
+    #     )
+
+    #     return convert_from_path(
+    #         self.pdf_path,
+    #         dpi=self.dpi,
+    #         first_page=first_page,
+    #         last_page=last_page
+    #     )
 
     def render_pages(self, start_page: int = 1, max_pages: int | None = None):
         if start_page > self.total_pages:
-            raise ValueError(
-                f"start_page ({start_page}) melebihi total halaman PDF ({self.total_pages})"
-            )
-
-        first_page = start_page
+            raise ValueError("start_page melebihi total halaman PDF")
 
         if max_pages:
-            last_page = min(
-                start_page + max_pages - 1,
-                self.total_pages
-            )
+            last_page = min(start_page + max_pages - 1, self.total_pages)
         else:
             last_page = self.total_pages
 
-        print(
-            f"📄 Rendering pages {first_page}–{last_page} "
-            f"dari total {self.total_pages} halaman"
-        )
-
-        return convert_from_path(
-            self.pdf_path,
-            dpi=self.dpi,
-            first_page=first_page,
-            last_page=last_page
-        )
+        for page in range(start_page, last_page + 1):
+            print(f"📄 Rendering page {page}...")
+            images = convert_from_path(
+                self.pdf_path,
+                dpi=self.dpi,
+                first_page=page,
+                last_page=page
+            )
+            yield images[0]
 
 
 # OPENAI VISION OCR EXTRACTOR
@@ -172,12 +191,12 @@ class CatalogueOCRApp:
         self.max_pages = max_pages
 
     def run(self):
-        images = self.renderer.render_pages(
-            start_page=self.start_page,
-            max_pages=self.max_pages
-        )
-
-        for idx, image in enumerate(images):
+        for idx, image in enumerate(
+            self.renderer.render_pages(
+                start_page=self.start_page,
+                max_pages=self.max_pages
+            )
+        ):
             page_number = self.start_page + idx
             print(f"🔍 OCR processing page {page_number}...")
             data = self.ocr.extract_catalogue_data(image)
@@ -185,6 +204,21 @@ class CatalogueOCRApp:
 
         self.writer.save()
         print("✅ OCR Catalogue extraction completed!")
+
+    # def run(self):
+    #     images = self.renderer.render_pages(
+    #         start_page=self.start_page,
+    #         max_pages=self.max_pages
+    #     )
+
+    #     for idx, image in enumerate(images):
+    #         page_number = self.start_page + idx
+    #         print(f"🔍 OCR processing page {page_number}...")
+    #         data = self.ocr.extract_catalogue_data(image)
+    #         self.writer.add_product(data)
+
+    #     self.writer.save()
+    #     print("✅ OCR Catalogue extraction completed!")
 
 
 # ENTRY POINT
