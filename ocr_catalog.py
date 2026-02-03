@@ -192,7 +192,7 @@ if __name__ == "__main__":
     app = CatalogueOCRApp(
         pdf_path="catalog.pdf",
         output_docx="catalogue_output.docx",
-        start_page=1,     # mulai dari halaman berapa
-        max_pages=55       # BATAS halaman (WAJIB di production)
+        start_page=6,     # mulai dari halaman berapa
+        max_pages=50       # BATAS halaman (WAJIB di production)
     )
     app.run()
