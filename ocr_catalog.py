@@ -199,6 +199,6 @@ if __name__ == "__main__":
         pdf_path="catalog.pdf",
         output_docx="catalogue_output.docx",
         start_page=6,
-        max_pages=50
+        max_pages=44
     )
     app.run()
